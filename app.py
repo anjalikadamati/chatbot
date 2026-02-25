@@ -299,7 +299,7 @@ def render_resume():
     st.title("📄 Resume Analyzer")
 
     analyzer = st.session_state.analyzer
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 1.2])
 
     with col1:
         uploaded_file = st.file_uploader("Upload PDF or DOCX",
@@ -335,6 +335,7 @@ def render_resume():
 
     with col2:
         if results:
+            # Skill Match Score Section
             score = results["match_score"]
             st.progress(score / 100)
             st.markdown(f"<p class='match-score'>{score}%</p>",
@@ -360,6 +361,142 @@ def render_resume():
                 for s in results["suggestions"]:
                     st.markdown(f"<div class='suggestion-box'>{s}</div>",
                                 unsafe_allow_html=True)
+
+            # ATS Score Section
+            if "ats_score" in results:
+                st.markdown("---")
+                st.markdown("<div class='section-header'>📊 ATS Score</div>",
+                            unsafe_allow_html=True)
+                
+                ats_score = results["ats_score"]
+                ats_breakdown = results["ats_breakdown"]
+                ats_suggestions = results.get("ats_suggestions", [])
+                
+                # Determine color based on score
+                if ats_score >= 70:
+                    score_color = "#10b981"  # Green
+                elif ats_score >= 40:
+                    score_color = "#f59e0b"  # Orange
+                else:
+                    score_color = "#ef4444"  # Red
+                
+                # ATS Score Display
+                st.markdown(f"""
+                <div style="text-align:center; padding: 20px; background: linear-gradient(145deg, #444654, #3d3d4d); 
+                            border-radius: 15px; margin: 15px 0;">
+                    <p style="font-size: 18px; color: #a0a0a0; margin-bottom: 10px;">ATS Score</p>
+                    <p style="font-size: 56px; font-weight: 700; color: {score_color}; margin: 0;">
+                        {ats_score}<span style="font-size: 24px; color: #6b7280;">/100</span>
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Progress bar for ATS score
+                st.progress(ats_score / 100)
+                
+                # Detailed Breakdown
+                st.markdown("<div class='section-header'>📌 Detailed Breakdown:</div>",
+                            unsafe_allow_html=True)
+                
+                breakdown_html = """
+                <div style="background: linear-gradient(145deg, #444654, #3d3d4d); 
+                            border-radius: 12px; padding: 20px; margin: 10px 0;">
+                """
+                
+                # Keyword Match
+                kw_score = ats_breakdown["keyword_match"]["score"]
+                kw_max = ats_breakdown["keyword_match"]["max"]
+                kw_pct = (kw_score / kw_max) * 100
+                breakdown_html += f"""
+                <div style="margin: 12px 0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#ffffff;">Keyword Match</span>
+                        <span style="color:#a0a0a0;">{kw_score}/{kw_max}</span>
+                    </div>
+                    <div style="background:#2d2d35; border-radius:5px; height:8px;">
+                        <div style="background: linear-gradient(90deg, #5436da, #7857f5); border-radius:5px; height:100%; width:{kw_pct}%"></div>
+                    </div>
+                </div>
+                """
+                
+                # Sections
+                sec_score = ats_breakdown["sections"]["score"]
+                sec_max = ats_breakdown["sections"]["max"]
+                sec_pct = (sec_score / sec_max) * 100
+                breakdown_html += f"""
+                <div style="margin: 12px 0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#ffffff;">Sections Present</span>
+                        <span style="color:#a0a0a0;">{sec_score}/{sec_max}</span>
+                    </div>
+                    <div style="background:#2d2d35; border-radius:5px; height:8px;">
+                        <div style="background: linear-gradient(90deg, #5436da, #7857f5); border-radius:5px; height:100%; width:{sec_pct}%"></div>
+                    </div>
+                </div>
+                """
+                
+                # Action Verbs
+                av_score = ats_breakdown["action_verbs"]["score"]
+                av_max = ats_breakdown["action_verbs"]["max"]
+                av_pct = (av_score / av_max) * 100
+                breakdown_html += f"""
+                <div style="margin: 12px 0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#ffffff;">Action Verbs</span>
+                        <span style="color:#a0a0a0;">{av_score}/{av_max}</span>
+                    </div>
+                    <div style="background:#2d2d35; border-radius:5px; height:8px;">
+                        <div style="background: linear-gradient(90deg, #5436da, #7857f5); border-radius:5px; height:100%; width:{av_pct}%"></div>
+                    </div>
+                </div>
+                """
+                
+                # Quantification
+                qn_score = ats_breakdown["quantification"]["score"]
+                qn_max = ats_breakdown["quantification"]["max"]
+                qn_pct = (qn_score / qn_max) * 100
+                breakdown_html += f"""
+                <div style="margin: 12px 0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#ffffff;">Quantification</span>
+                        <span style="color:#a0a0a0;">{qn_score}/{qn_max}</span>
+                    </div>
+                    <div style="background:#2d2d35; border-radius:5px; height:8px;">
+                        <div style="background: linear-gradient(90deg, #5436da, #7857f5); border-radius:5px; height:100%; width:{qn_pct}%"></div>
+                    </div>
+                </div>
+                """
+                
+                # Formatting
+                fmt_score = ats_breakdown["formatting"]["score"]
+                fmt_max = ats_breakdown["formatting"]["max"]
+                fmt_pct = (fmt_score / fmt_max) * 100
+                breakdown_html += f"""
+                <div style="margin: 12px 0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#ffffff;">Formatting</span>
+                        <span style="color:#a0a0a0;">{fmt_score}/{fmt_max}</span>
+                    </div>
+                    <div style="background:#2d2d35; border-radius:5px; height:8px;">
+                        <div style="background: linear-gradient(90deg, #5436da, #7857f5); border-radius:5px; height:100%; width:{fmt_pct}%"></div>
+                    </div>
+                </div>
+                """
+                
+                breakdown_html += "</div>"
+                st.markdown(breakdown_html, unsafe_allow_html=True)
+                
+                # Areas to Improve
+                if ats_suggestions:
+                    st.markdown("<div class='section-header'>⚠ Areas to Improve:</div>",
+                                unsafe_allow_html=True)
+                    
+                    for suggestion in ats_suggestions:
+                        st.markdown(f"""
+                        <div class='suggestion-box' style="border-left-color: #f59e0b;">
+                            {suggestion}
+                        </div>
+                        """, unsafe_allow_html=True)
 
         else:
             st.markdown(
